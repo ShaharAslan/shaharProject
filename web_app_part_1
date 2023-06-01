@@ -1,0 +1,42 @@
+import json
+from flask import Flask
+import requests
+
+app = Flask(__name__)
+
+
+# ---------WEB APP---------
+@app.route("/users/getUserData/<int:USER_ID>")
+def getUserName(USER_ID):
+    response = requests.get("http://127.0.0.1:5000/Users/" + str(USER_ID))
+    myjson = response.json()
+    return "<H1 id='user'>" + myjson[0] + "</H1>"
+
+
+@app.route("/users/delUser/<int:USER_ID>")
+def delUserName(USER_ID):
+    response = requests.delete("http://127.0.0.1:5000/Delete/" + str(USER_ID))
+    return "<H1 id='user'>" + response.json() + "</H1>"
+
+
+@app.route("/users/EditUser/<int:USER_ID>")
+def EditUser(USER_ID):
+    data = {'UserId': USER_ID, 'name': 'WSW'}
+    json_data = json.dumps(data)
+    headers = {'Content-type': 'application/json'}
+    response = requests.put("http://127.0.0.1:5000/Update", data=json_data, headers=headers)
+    return "<H1 id='user'>" + response.json() + "</H1>"
+
+
+@app.route("/users/insUser")
+def insUserName():
+
+    data = {'UserId': 11, 'name': 'shir'}
+    json_data = json.dumps(data)
+    headers = {'Content-type': 'application/json'}
+    response = requests.post("http://127.0.0.1:5000/post", data=json_data, headers=headers)
+
+    return "<H1 id='user'>" + response.json() + "</H1>"
+
+
+app.run(host='127.0.0.1', debug=True, port=5001)
