@@ -1,0 +1,90 @@
+from datetime import datetime
+from flask import Flask, jsonify, request
+import pymysql
+from pymysql.cursors import Cursor
+import json
+
+app = Flask(__name__)
+
+
+@app.route("/Users/<UserId>", methods=['GET'])
+def getUserById(UserId):
+    try:
+        conn = pymysql.connect(host="sql12.freemysqlhosting.net", port=3306, user="sql12617656", password="jfmrgAlDHe",
+                               db="sql12617656")
+        conn.autocommit(True)
+        cursor: Cursor = conn.cursor()
+        cursor.execute("SELECT user_name FROM sql12617656.users WHERE user_id =%s", UserId)
+        empRow = cursor.fetchone()
+        response = jsonify(empRow)
+        response.status_code = 200
+        return response
+    except Exception as e:
+        print(e)
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route("/Delete/<UserId>", methods=['DELETE'])
+def delUserById(UserId):
+    conn = pymysql.connect(host="sql12.freemysqlhosting.net", port=3306, user="sql12617656",
+                           password="jfmrgAlDHe", db="sql12617656")
+    conn.autocommit(True)
+    cursor: Cursor = conn.cursor()
+    cursor.execute("DELETE FROM sql12617656.users WHERE user_id =%s", UserId)
+    conn.commit()
+    response = jsonify("User Id " + UserId + " Has Been Deleted")
+    response.status_code = 200
+    cursor.close()
+    conn.close()
+    return response
+
+
+@app.route("/Update", methods=['PUT'])
+def editUserById():
+    data = request.json
+    User_Id = data['UserId']
+    user_name = data['name']
+    bindData = (user_name, User_Id)
+
+    conn = pymysql.connect(host="sql12.freemysqlhosting.net", port=3306, user="sql12617656",
+                           password="jfmrgAlDHe", db="sql12617656")
+    conn.autocommit(True)
+    cursor: Cursor = conn.cursor()
+    cursor.execute("UPDATE sql12617656.users SET user_name=%s WHERE user_id =%s", bindData)
+    conn.commit()
+
+    response = jsonify("User Has Been Updated!")
+    response.status_code = 200
+    cursor.close()
+    conn.close()
+    return response
+
+
+@app.route("/post", methods=['POST'])
+def insUserById():
+    print(123)
+    data = request.json
+    User_Id = data['UserId']
+    user_name = data['name']
+    time = datetime.now()
+    print(user_name)
+    #today = time.strftime('%Y-%m-%d %H:%M:%S')
+    bindData = (user_name, User_Id, time)
+
+    conn = pymysql.connect(host="sql12.freemysqlhosting.net", port=3306, user="sql12617656",
+                           password="jfmrgAlDHe", db="sql12617656")
+    conn.autocommit(True)
+    cursor: Cursor = conn.cursor()
+    cursor.execute("INSERT INTO sql12617656.users SET user_name=%s ,user_id =%s, creation_date=%s", bindData)
+    conn.commit()
+
+    response = jsonify("User Has Been Inserted!")
+    response.status_code = 200
+    cursor.close()
+    conn.close()
+    return response
+
+
+app.run(host='127.0.0.1', debug=True, port=5000)
